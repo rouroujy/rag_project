@@ -117,8 +117,12 @@ async def main():
         # 3.向量化
         embedings = model.encode(docs)
         # 4.建立向量索引
-        dimension = embedings.shape[1]
+
+        # 获取向量维度
+        dimension = embedings.shape[1]  
+        # 建立向量索引（向量空间）  
         index = faiss.IndexFlatL2(dimension)
+        # 加入向量到索引
         index.add(np.array(embedings).astype("float32"))
         logger.info("向量化、建立向量索引成功！")
     except Exception as e:
