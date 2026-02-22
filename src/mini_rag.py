@@ -7,12 +7,27 @@ import asyncio
 import os
 import pathlib
 import argparse
+from src.config import settings
+from src.service.dashscope_client import DashscpoeClient
 
 BASE_MODEL_DIR = "/mnt/d/ai_models"
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 CACHE_DIR = os.path.join(BASE_MODEL_DIR, "hf_cache")
 
 logger = logging.getLogger(__name__)
+
+
+def build_prompt(query, retrieved_docs):
+    context = "\n\n".join(retrieved_docs)
+    prompt = f"""
+        你是一个专业的AI助手，请基于以下参考资料回答问题
+        【参考资料】
+        {context}
+        【用户问题】
+        {query}
+        请基于参考资料回答，如果资料中没有相关内容，请说明无法从资料中找到答案
+    """
+    return prompt
 
 
 def parse_args():
@@ -120,9 +135,9 @@ async def main():
 
         # 获取向量维度
         dimension = embedings.shape[1]  
-        # 建立向量索引（向量空间）  
+        # 建立向量索引（向量空间） 
         index = faiss.IndexFlatL2(dimension)
-        # 加入向量到索引
+        # 加入向量到索引（向量存储）
         index.add(np.array(embedings).astype("float32"))
         logger.info("向量化、建立向量索引成功！")
     except Exception as e:
@@ -136,9 +151,23 @@ async def main():
     k = 5
     D,I = index.search(np.array(query_vector).astype("float32"), k = k)
     logger.info("查询结束")
-    print(f"\n===== k={k} 实验结果 =====")
+    print(f"\n========= k={k} LLM处理前结果 =============")
     for idx in I[0]:
         print("候选文档：", docs[idx][:500])
+
+
+    # 6.调用大模型处理结果
+    try:
+        client = DashscpoeClient()
+        retrieved_docs = [docs[idx] for idx in I[0]]
+        prompt = build_prompt(query,retrieved_docs)
+        result = client.call_llm(prompt)
+        print("===========================================")
+        print(f"调用百炼大模型处理后的结果为：{result}")
+        
+    #系统异常
+    except Exception as e:
+         logger.exception(f"系统级异常:{e}")
 
     # for idx in I[0]:
     #     print("候选文档：", docs[idx])
