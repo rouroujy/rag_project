@@ -45,18 +45,18 @@ class RAGService:
 
         self.prompt = ChatPromptTemplate.from_template(
             """
-你是一个严谨的企业级问答助手。
-仅根据上下文回答。
-必须输出JSON格式：
-{{
-    "answer":"...",
-    "sources":["...", "..."]
-}}
-上下文：
-{context}
-问题：
-{question}
-"""
+            你是一个严谨的企业级问答助手。
+            仅根据上下文回答。
+            必须输出JSON格式：
+            {{
+                "answer":"...",
+                "sources":["...", "..."]
+            }}
+            上下文：
+            {context}
+            问题：
+            {question}
+            """
         )
         self.chain = (
             {

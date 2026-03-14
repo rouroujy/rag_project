@@ -8,7 +8,7 @@ import os
 import pathlib
 import argparse
 from src.config import settings
-from src.service.dashscope_client import DashscpoeClient
+from src.service.dashscope_client import DashScopeClient
 
 BASE_MODEL_DIR = "/mnt/d/ai_models"
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
@@ -158,10 +158,10 @@ async def main():
 
     # 6.调用大模型处理结果
     try:
-        client = DashscpoeClient()
+        client = DashScopeClient()
         retrieved_docs = [docs[idx] for idx in I[0]]
         prompt = build_prompt(query,retrieved_docs)
-        result = client.call_llm(prompt)
+        result = client.generate(prompt)
         print("===========================================")
         print(f"调用百炼大模型处理后的结果为：{result}")
         
